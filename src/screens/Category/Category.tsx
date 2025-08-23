@@ -1,0 +1,121 @@
+import React, { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Alert, View } from "react-native";
+import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
+
+import SectionCategory from "src/sections/Category/SectionCategory";
+import styles from "./CategoryStyle";
+import SectionHeader from "src/sections/Common/SectionHeader";
+import SectionHeaderX from "src/sections/Common/SectionHeaderX";
+import { LinearGradient } from "expo-linear-gradient";
+import { gameModeString } from "src/constants/consts";
+import { useFocusEffect } from "@react-navigation/native";
+import { user_test_data } from "assets/@mockup/data";
+import { useVideo } from "src/hooks/useVideo";
+import { useSelector } from "react-redux";
+import WebView from "react-native-webview";
+import { useClientVideo } from "src/hooks/useClientVideo";
+
+
+type Props = {
+    route?: any,
+    navigation?: any,
+}
+
+export default function Category({
+    route,
+    navigation,
+}: Props) {
+    const [gameMode, setGameMode] = useState(route.params && route.params["gameMode"] != undefined ? route.params["gameMode"] : 1);
+    const player = React.useRef<Video | null>(null); // Type the reference here
+    const [status, setStatus] = useState({});
+    const { user } = useSelector((state: any) => state.userData);
+    const [video_url, setvideo_url] = useState("");
+    const [isBuffering, setIsBuffering] = useState(true);
+
+    useFocusEffect(
+        useCallback(() => {
+          // Stop the video and reset to the beginning when the page is revisited
+          if (player.current) {
+            player.current.stopAsync(); // Stop the video
+            player.current.replayAsync();
+          }
+      
+          // Fetch the video data again
+          const fetchVideoData = async () => {
+            if (route.params && route.params["gameMode"] !== undefined) {
+              setGameMode(route.params["gameMode"]);
+              
+              const matchedVideo = user.videos.find(
+                (video: { title: string }) => video.title === gameModeString[route.params["gameMode"]]
+              );
+              if (matchedVideo) {
+                setvideo_url(matchedVideo.vimeoId);
+              } else {
+                setvideo_url('1033922649');
+              }
+            }
+          };
+          fetchVideoData();
+        }, [route.params, user.videos])
+      );
+    const {thumbnailUrl, videoUrl, video} = useClientVideo("1070136177");
+
+    const gotoDashboard = useCallback(() => {
+        navigation.navigate("Home", {
+            screen: "Dashboard",
+        });
+    }, [navigation]);
+    return (
+        <View style={styles.container}>
+            <LinearGradient
+                colors={['#FF675B', '#87C6E8']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 2 }}
+                style={styles.upperGradientContainer}
+            >
+            </LinearGradient>
+            <View style={styles.headerContainer}>
+                <SectionHeaderX 
+                    title={gameModeString[gameMode]}
+                    goBack={gotoDashboard}
+                />
+            </View>
+            <View style={styles.vimeoVideoContainer}>
+              {isBuffering && (
+                <View style={styles.loaderOverlay}>
+                  <ActivityIndicator size="large" color="#fff" />
+                </View>
+              )}
+              {
+                videoUrl && 
+                  <Video
+                    ref={player}
+                    style={styles.video}
+                    source={{uri: videoUrl}}
+                    useNativeControls
+                    resizeMode={ResizeMode.CONTAIN}
+                    isLooping
+                    shouldPlay={true}
+                    onPlaybackStatusUpdate={status => {
+                      setStatus(() => status);
+                      if (status.isLoaded) {
+                        const buffering =
+                          ('isBuffering' in status && status.isBuffering) ||
+                          (!status.isPlaying && status.shouldPlay);
+                        setIsBuffering(buffering);
+                      } else {
+                        setIsBuffering(true); // still loading
+                      }
+                    }}
+                  />
+              }
+            </View>
+            <View style={styles.sectionContentSlider}>
+                <SectionCategory 
+                    gameMode={gameMode} 
+                    goBack={gotoDashboard} 
+                />
+            </View>
+        </View>
+    );
+}

@@ -1,0 +1,24 @@
+{
+  "react-native": {
+    "android_task_executor_maximum_pooled_threads": 4,
+    "android_task_executor_keep_alive_seconds": 3,
+    "crashlytics_disable_auto_disabler": true,
+    "crashlytics_debug_enabled": true,
+    "crashlytics_auto_collection_enabled": true,
+    "analytics_auto_collection_enabled": true,
+    "analytics_collection_deactivated": false,
+    "in_app_messaging_auto_collection_enabled": true,
+    "messaging_auto_init_enabled": true,
+    "messaging_android_headless_task_timeout": 60000,
+    "messaging_android_notification_channel_id": "high-priority",
+    "messaging_android_notification_color": "@color/accent",
+    "messaging_ios_auto_register_for_remote_messages": true,
+    "perf_auto_collection_enabled": true,
+    "perf_collection_deactivated": false,
+    "storage_emulator_host": "localhost",
+    "storage_emulator_port": 9199,
+    "firestore_offline_persistence": true,
+    "firestore_settings_cache_size_bytes": 134217728,
+    "auth_persistence": true
+  }
+}
